@@ -13,9 +13,15 @@ typedef struct shopData_{
   int numTeams;
   double avgCostPirate, avgCostNinja, avgArrPirate, avgArrNinja;
   sem_t *doorLock;
+  sem_t *teams;
   int ninjasInShop;
   int piratesInShop;
 } shopData;
+
+typedef struct AdventurerData_{
+  shopData * theShop;
+  int isArr;
+} AdventurerData;
 
 double getRandNormNum(double avg);
 
@@ -49,12 +55,12 @@ void costumeDept(int isArr, shopData* costumeShop){
     }
 
     //if there is an available team, go into the costume shop
-    sem_wait(&teams);
+    sem_wait(costumeShop->teams);
     if(isArr){
       sleep(getRandNormNum(costumeShop->avgCostPirate));
     }
     else sleep(getRandNormNum(costumeShop->avgCostNinja));
-    sem_post(&teams);
+    sem_post(costumeShop->teams);
 
     //leave the costume shop
     sem_wait(costumeShop->doorLock);
@@ -80,7 +86,6 @@ double getRandNormNum(double avg){
 }
 
 int main(int argc, char* argv[]){
-  sem_t teams;
   srand(time(0));
   srand48(time(0));
   int numTeams, numPirates, numNinjas;
@@ -111,7 +116,7 @@ int main(int argc, char* argv[]){
   avgArrPirate = atof(argv[6]);
   avgArrNinja = atof(argv[7]);
 
-  *costumeShop = (shopData*) malloc(sizeof(shopData));
+  costumeShop = (shopData*) malloc(sizeof(shopData));
 
   costumeShop->numPirates = numPirates;
   costumeShop->numNinjas = numNinjas;
@@ -123,16 +128,22 @@ int main(int argc, char* argv[]){
   costumeShop->avgCostNinja = avgCostNinja;
   costumeShop->avgCostPirate = avgCostPirate;
 
-  sem_init(&teams, 0, numTeams);
+  sem_init(costumeShop->teams, 0, numTeams);
   sem_init(costumeShop->doorLock, 0, 1);
 
   for(int i = 0; i < numPirates; i++){
-    pthread_t pirate;
-    pthread_create(pirate, NULL, costumeDept, 1, NULL);
+    AdventurerData* threadData = (AdventurerData*) malloc(sizeof(AdventurerData));
+    threadData->theShop = costumeShop;
+    threadData->isArr = 1;
+    pthread_t* pirate = (pthread_t*) malloc(sizeof(pthread_t));
+    pthread_create(pirate, NULL, (void*) &costumeDept, threadData);
   }
   for(int i = 0; i < numNinjas; i++){
-    pthread_t ninja;
-    pthread_create(ninja, NULL, costumeDept, 0, NULL);
+    AdventurerData* threadData = (AdventurerData*) malloc(sizeof(AdventurerData));
+    threadData->theShop = costumeShop;
+    threadData->isArr = 0;
+    pthread_t* ninja = (pthread_t*) malloc(sizeof(pthread_t));
+    pthread_create(ninja, NULL, (void*) &costumeDept, threadData);
   }
 
   return 0;
