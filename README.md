@@ -2,8 +2,12 @@
 
 Matthew's Ideas (Just to gather them into one place):
 
--If we measure time in seconds, and each second is meant to be indivisible, then we should have each person sleep for 1 second every time they fail to get the lock.
-	-Each person should keep track of the length of time for which they've waited in a stack variable. This makes time relative, which is weird, but should ultimately be okay if things move much faster than seconds.
+-If we measure time in seconds, and each second is meant to be indivisible,
+ then we should have each person sleep for 1 second every time they fail to 
+ get the lock.
+	-Each person should keep track of the length of time for which they've 
+	 waited in a stack variable. This makes time relative, which is weird, 
+	but should ultimately be okay if things move much faster than seconds.
 
 -We can keep a variable in the struct tracking how many pirates and ninjas are currently waiting to get into the shop. This can help the shop decide whether or not it needs switch from pirates to ninjas.
 
@@ -11,3 +15,5 @@ Matthew's Ideas (Just to gather them into one place):
 
 -We should have a variable in the struct to track the number of available teams of costumers.
 
+TA Q
+-Can we treat the teams as indestinguishable?
