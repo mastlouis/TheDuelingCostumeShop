@@ -6,6 +6,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
+//#include <sys/time.h>
+
+#define MAX_SIDE_CHANGE (30)
 
 typedef struct ShopData_{
   //Parameters for the program
@@ -24,6 +27,12 @@ typedef struct ShopData_{
   int numTeamsAvailable;
   int numPiratesWaiting;
   int numNinjasWaiting;
+
+  //Infomation for controlling when ninjas or pirates can enter
+  int blockPirates;
+  int blockNinjas;
+  int maxPiratesTime;
+  int maxNinjasTime;
 } ShopData;
 
 typedef struct AdventurerData_{
@@ -35,6 +44,8 @@ typedef struct AdventurerData_{
 double getRandNormNum(double avg);
 
 void costumeDept(AdventurerData *person){
+	//Extract the data from the person struct to make code more readable
+	ShopData *costumeShop = person->theShop;
   int needsCostume = 1;
   int isEntering = 0;
   while(needsCostume){
@@ -48,23 +59,27 @@ void costumeDept(AdventurerData *person){
     while(!isEntering){
       sem_wait(costumeShop->doorLock);
       if(person->isArr){
-        if(!costumeShop->ninjasInShop && costumeShop->numTeamsAvailable > 0){
+        if(!costumeShop->ninjasInShop 
+        			&& costumeShop->numTeamsAvailable > 0 
+        			&& !costumeShop->blockPirates){
           costumeShop->numTeamsAvailable--;
           costumeShop->piratesInShop++;
           isEntering = 1;
         }
         else if(person->minutesWaiting == 0){
-          theShop->numPiratesWaiting++;
+          costumeShop->numPiratesWaiting++;
         }
       }
       else{
-        if(!costumeShop->piratesInShop && costumeShop->numTeamsAvailable > 0){
+        if(!costumeShop->piratesInShop 
+        			&& costumeShop->numTeamsAvailable > 0
+        			&& !costumeShop->blockNinjas){
           costumeShop->numTeamsAvailable--;
           costumeShop->ninjasInShop++;
           isEntering = 1;
         }
         else if(person->minutesWaiting == 0){
-          theShop->numNinjasWaiting++;
+          costumeShop->numNinjasWaiting++;
         }
       }
       sem_post(costumeShop->doorLock);
@@ -114,6 +129,7 @@ double getRandNormNum(double avg){
 }
 
 int main(int argc, char* argv[]){
+	AdventurerData** theAdventurers;
   srand(time(0));
   srand48(time(0));
   int numTeams, numPirates, numNinjas;
@@ -145,6 +161,7 @@ int main(int argc, char* argv[]){
   avgArrNinja = atof(argv[7]);
 
   costumeShop = (ShopData*) malloc(sizeof(ShopData));
+  theAdventurers = (AdventurerData*) calloc(sizeof(AdventureData*)*(numPirates + numNinjas));
 
   costumeShop->numPirates = numPirates;
   costumeShop->numNinjas = numNinjas;
@@ -156,11 +173,32 @@ int main(int argc, char* argv[]){
   costumeShop->avgCostNinja = avgCostNinja;
   costumeShop->avgCostPirate = avgCostPirate;
 
+  //Variables for fairness
+  costumeShop->blockPirates = 0;
+  costumeShop->blockNinjas = 0;
+  /*
+  * Default maximum time for each side is 30 minutes.
+  * I don't know if there's an advantage to that, but
+  * I assume that there's some math that works out
+  * nicely.
+  */
+  costumeShop->maxPiratesTime = MAX_SIDE_CHANGE;
+  costumeShop->maxNinjasTime = MAX_SIDE_CHANGE;
+  /*
+  * If there's enough time to switch before anyone
+  * starts getting free costuming, do that.
+  */
+  if((MAX_SIDE_CHANGE - avgCostNinja) > 0)
+ 		costumeShop->maxNinjasTime = MAX_SIDE_CHANGE - avgCostNinja;
+ 	if((MAX_SIDE_CHANGE - avgCostPirate) > 0)
+ 		costumeShop-maxPirateTime = MAX_SIDE_CHANGE - avgCostPirate;
+
   sem_init(costumeShop->teams, 0, numTeams);
   sem_init(costumeShop->doorLock, 0, 1);
 
   for(int i = 0; i < numPirates; i++){
     AdventurerData* threadData = (AdventurerData*) malloc(sizeof(AdventurerData));
+    theAdventurers[i] = threadData;
     threadData->theShop = costumeShop;
     threadData->isArr = 1;
     threadData->minutesWaiting = 0;
@@ -169,12 +207,21 @@ int main(int argc, char* argv[]){
   }
   for(int i = 0; i < numNinjas; i++){
     AdventurerData* threadData = (AdventurerData*) malloc(sizeof(AdventurerData));
+    theAdventurers[numPirates + i] = threadData;
     threadData->theShop = costumeShop;
     threadData->isArr = 0;
     threadData->minutesWaiting = 0;
     pthread_t* ninja = (pthread_t*) malloc(sizeof(pthread_t));
     pthread_create(ninja, NULL, (void*) &costumeDept, threadData);
   }
+
+  //Free the threads here if that's something we should do
+
+  for(int i = 0; i< numNinjas + numPirates; i++){
+  	free(theAdventurers[i]);
+  }
+  free(theAdventurers);
+  free(shopData);
 
   return 0;
 }
