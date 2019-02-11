@@ -36,9 +36,10 @@ typedef struct ShopData_{
 } ShopData;
 
 typedef struct AdventurerData_{
-  ShopData * theShop;
+  ShopData* theShop;
   int isArr;
   int minutesWaiting;
+  pthread_t* theThread;
 } AdventurerData;
 
 double getRandNormNum(double avg);
@@ -55,12 +56,12 @@ void costumeDept(AdventurerData *person){
     }
     else sleep(getRandNormNum(costumeShop->avgArrNinja));
 
-    //Walk up to the shop like what up I got a big sword
+    printf("Walk up to the shop like what up I got a big sword\n");
     while(!isEntering){
       sem_wait(costumeShop->doorLock);
       if(person->isArr){
-        if(!costumeShop->ninjasInShop 
-        			&& costumeShop->numTeamsAvailable > 0 
+        if(!costumeShop->ninjasInShop
+        			&& costumeShop->numTeamsAvailable > 0
         			&& !costumeShop->blockPirates){
           costumeShop->numTeamsAvailable--;
           costumeShop->piratesInShop++;
@@ -71,7 +72,7 @@ void costumeDept(AdventurerData *person){
         }
       }
       else{
-        if(!costumeShop->piratesInShop 
+        if(!costumeShop->piratesInShop
         			&& costumeShop->numTeamsAvailable > 0
         			&& !costumeShop->blockNinjas){
           costumeShop->numTeamsAvailable--;
@@ -90,6 +91,7 @@ void costumeDept(AdventurerData *person){
 
     //if there is an available team, go into the costume shop
     //Wait should never actually put a thread to sleep
+    printf("We be in the shop bois\n");
     sem_wait(costumeShop->teams);
     if(person->isArr){
       sleep(getRandNormNum(costumeShop->avgCostPirate));
@@ -118,6 +120,8 @@ void costumeDept(AdventurerData *person){
       needsCostume = 0;
     }
   }
+  printf("Here comes the reaper\n");
+  pthread_exit(NULL);
 }
 
 double getRandNormNum(double avg){
@@ -161,7 +165,10 @@ int main(int argc, char* argv[]){
   avgArrNinja = atof(argv[7]);
 
   costumeShop = (ShopData*) malloc(sizeof(ShopData));
-  theAdventurers = (AdventurerData*) calloc(sizeof(AdventureData*)*(numPirates + numNinjas));
+  theAdventurers = (AdventurerData**) calloc((numPirates + numNinjas), sizeof(AdventurerData*));
+
+  costumeShop->doorLock = (sem_t*) malloc(sizeof(sem_t));
+  costumeShop->teams = (sem_t*) malloc(sizeof(sem_t));
 
   costumeShop->numPirates = numPirates;
   costumeShop->numNinjas = numNinjas;
@@ -191,7 +198,7 @@ int main(int argc, char* argv[]){
   if((MAX_SIDE_CHANGE - avgCostNinja) > 0)
  		costumeShop->maxNinjasTime = MAX_SIDE_CHANGE - avgCostNinja;
  	if((MAX_SIDE_CHANGE - avgCostPirate) > 0)
- 		costumeShop-maxPirateTime = MAX_SIDE_CHANGE - avgCostPirate;
+ 		costumeShop->maxPiratesTime = MAX_SIDE_CHANGE - avgCostPirate;
 
   sem_init(costumeShop->teams, 0, numTeams);
   sem_init(costumeShop->doorLock, 0, 1);
@@ -203,6 +210,7 @@ int main(int argc, char* argv[]){
     threadData->isArr = 1;
     threadData->minutesWaiting = 0;
     pthread_t* pirate = (pthread_t*) malloc(sizeof(pthread_t));
+    threadData->theThread = pirate;
     pthread_create(pirate, NULL, (void*) &costumeDept, threadData);
   }
   for(int i = 0; i < numNinjas; i++){
@@ -212,16 +220,21 @@ int main(int argc, char* argv[]){
     threadData->isArr = 0;
     threadData->minutesWaiting = 0;
     pthread_t* ninja = (pthread_t*) malloc(sizeof(pthread_t));
+    threadData->theThread = ninja;
     pthread_create(ninja, NULL, (void*) &costumeDept, threadData);
   }
 
+  //Join the threads
+  for(int i = 0; i < numPirates + numNinjas; i++){
+    pthread_join(*(theAdventurers[i]->theThread), NULL);
+  }
   //Free the threads here if that's something we should do
 
-  for(int i = 0; i< numNinjas + numPirates; i++){
+  for(int i = 0; i < (numNinjas + numPirates); i++){
   	free(theAdventurers[i]);
   }
   free(theAdventurers);
-  free(shopData);
+  free(costumeShop);
 
   return 0;
 }
