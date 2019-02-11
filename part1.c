@@ -59,6 +59,7 @@ void costumeDept(AdventurerData *person){
     printf("Walk up to the shop like what up I got a big sword\n");
     while(!isEntering){
       sem_wait(costumeShop->doorLock);
+      //printf("We here open up\n");
       if(person->isArr){
         if(!costumeShop->ninjasInShop
         			&& costumeShop->numTeamsAvailable > 0
@@ -92,33 +93,39 @@ void costumeDept(AdventurerData *person){
     //if there is an available team, go into the costume shop
     //Wait should never actually put a thread to sleep
     printf("We be in the shop bois\n");
+    if(person->isArr) printf("Yo ho, me harties!\n");
+    else printf("...\n");
     sem_wait(costumeShop->teams);
     if(person->isArr){
+      costumeShop->numPiratesWaiting--;
       sleep(getRandNormNum(costumeShop->avgCostPirate));
     }
-    else sleep(getRandNormNum(costumeShop->avgCostNinja));
+    else{
+      costumeShop->numNinjasWaiting--;
+      sleep(getRandNormNum(costumeShop->avgCostNinja));
+    }
     //relinquish a team
     sem_post(costumeShop->teams);
-
+    printf("Lookin' spiffy, as always ;)\n");
     //leave the costume shop
     sem_wait(costumeShop->doorLock);
     costumeShop->numTeamsAvailable++;
     if(person->isArr){
       costumeShop->piratesInShop--;
-      if(person->minutesWaiting)
-        costumeShop->numPiratesWaiting--;
     }
     else{
       costumeShop->ninjasInShop--;
-      if(person->minutesWaiting)
-        costumeShop->numNinjasWaiting--;
     }
-    sem_wait(costumeShop->doorLock);
+    sem_post(costumeShop->doorLock);
 
     //let there be a 25% chance that the pirate or ninja will return to the costume shop
-    if(!rand()%4){
+    int n = rand()%4;
+    printf("%d", n);
+    if(n){
       needsCostume = 0;
+      printf("I know my lines, b*tch %d\n", costumeShop->ninjasInShop);
     }
+    else printf("gotta get those lines right\n");
   }
   printf("Here comes the reaper\n");
   pthread_exit(NULL);
@@ -135,7 +142,7 @@ double getRandNormNum(double avg){
 int main(int argc, char* argv[]){
 	AdventurerData** theAdventurers;
   srand(time(0));
-  srand48(time(0));
+  srand48(1);
   int numTeams, numPirates, numNinjas;
   double avgCostPirate, avgCostNinja, avgArrPirate, avgArrNinja;
   ShopData *costumeShop;
@@ -173,6 +180,7 @@ int main(int argc, char* argv[]){
   costumeShop->numPirates = numPirates;
   costumeShop->numNinjas = numNinjas;
   costumeShop->numTeams = numTeams;
+  costumeShop->numTeamsAvailable = numTeams;
   costumeShop->ninjasInShop = 0;
   costumeShop->piratesInShop = 0;
   costumeShop->avgArrNinja = avgArrNinja;
