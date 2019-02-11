@@ -65,6 +65,7 @@ void costumeDept(AdventurerData *person){
         			&& costumeShop->numTeamsAvailable > 0
         			&& !costumeShop->blockPirates){
           costumeShop->numTeamsAvailable--;
+          costumeShop->numPiratesWaiting--;
           costumeShop->piratesInShop++;
           isEntering = 1;
         }
@@ -77,6 +78,7 @@ void costumeDept(AdventurerData *person){
         			&& costumeShop->numTeamsAvailable > 0
         			&& !costumeShop->blockNinjas){
           costumeShop->numTeamsAvailable--;
+          costumeShop->numNinjasWaiting--;
           costumeShop->ninjasInShop++;
           isEntering = 1;
         }
@@ -97,11 +99,9 @@ void costumeDept(AdventurerData *person){
     else printf("...\n");
     sem_wait(costumeShop->teams);
     if(person->isArr){
-      costumeShop->numPiratesWaiting--;
       sleep(getRandNormNum(costumeShop->avgCostPirate));
     }
     else{
-      costumeShop->numNinjasWaiting--;
       sleep(getRandNormNum(costumeShop->avgCostNinja));
     }
     //relinquish a team
@@ -119,11 +119,9 @@ void costumeDept(AdventurerData *person){
     sem_post(costumeShop->doorLock);
 
     //let there be a 25% chance that the pirate or ninja will return to the costume shop
-    int n = rand()%4;
-    printf("%d", n);
-    if(n){
+    if(rand()%4){
       needsCostume = 0;
-      printf("I know my lines, b*tch %d\n", costumeShop->ninjasInShop);
+      printf("I know my lines, b*tch %d %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     }
     else printf("gotta get those lines right\n");
   }
@@ -181,6 +179,8 @@ int main(int argc, char* argv[]){
   costumeShop->numNinjas = numNinjas;
   costumeShop->numTeams = numTeams;
   costumeShop->numTeamsAvailable = numTeams;
+  costumeShop->numPiratesWaiting = 0;
+  costumeShop->numNinjasWaiting = 0;
   costumeShop->ninjasInShop = 0;
   costumeShop->piratesInShop = 0;
   costumeShop->avgArrNinja = avgArrNinja;
