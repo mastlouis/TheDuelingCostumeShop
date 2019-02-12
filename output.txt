@@ -1,0 +1,2 @@
+Incorrect argument entry! Arguments are are follows:
+	 ./part1 <number of teams> <number of pirates> <number of ninjas> <average pirate costuming time> <average ninja costuming time> <average pirate arrival time> <average ninja arrival time>

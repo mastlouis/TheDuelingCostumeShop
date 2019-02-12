@@ -67,7 +67,7 @@ void costumeDept(AdventurerData *person){
           costumeShop->numTeamsAvailable--;
           costumeShop->piratesInShop++;
           isEntering = 1;
-          if(costumeShop->numPiratesWaiting) costumeShop->numPiratesWaiting--;
+          if(person->minutesWaiting) costumeShop->numPiratesWaiting--;
         }
         else if(person->minutesWaiting == 0){
           costumeShop->numPiratesWaiting++;
