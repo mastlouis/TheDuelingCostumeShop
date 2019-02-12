@@ -85,11 +85,11 @@ void costumeDept(AdventurerData *person){
               >= (costumeShop->pirateMaxWait * costumeShop->pirateWaitMultiplier) - 1
               && !blockNinjas){
             //Block ninjas but let in pirates
-            blockNinjas = 1;
-            blockPirates = 0;
+            costumeShop->blockNinjas = 1;
+            costumeShop->blockPirates = 0;
             printf("A pirate has blocked the ninjas. New multiplier: %d\n", costumeShop->pirateWaitMultiplier + 1);
             //Increase the threshold for pirates to block
-            pirateWaitMultiplier++;
+            costumeShop->pirateWaitMultiplier++;
           }
         }
       }
@@ -111,13 +111,13 @@ void costumeDept(AdventurerData *person){
           //If the shop may lose money by not letting in this Ninja soon
           if(person->minutesWaiting 
               >= (costumeShop->ninjaMaxWait * costumeShop->ninjaWaitMultiplier) - 1
-              && !blockPirates){
+              && !costumeShop->blockPirates){
             //Block pirates but let in ninjas
-            blockPirates = 1;
-            blockNinjas = 0;
+            costumeShop->blockPirates = 1;
+            costumeShop->blockNinjas = 0;
             printf("A ninja has blocked the pirates. New Multiplier: %d\n", costumeShop->ninjaWaitMultiplier + 1);
             //Increase the threshold for ninjas to block again
-            ninjaWaitMultiplier++;
+            costumeShop->ninjaWaitMultiplier++;
           }
         }
       }
