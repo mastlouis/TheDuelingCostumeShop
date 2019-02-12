@@ -83,7 +83,7 @@ void costumeDept(AdventurerData *person){
            //If the shop may lose money by not letting in this Pirate soon
           if(person->minutesWaiting 
               >= (costumeShop->pirateMaxWait * costumeShop->pirateWaitMultiplier) - 1
-              && !blockNinjas){
+              && !costumeShop->blockNinjas){
             //Block ninjas but let in pirates
             costumeShop->blockNinjas = 1;
             costumeShop->blockPirates = 0;
@@ -292,7 +292,7 @@ int main(int argc, char* argv[]){
     threadData->totalTimeWaiting = 0;
     threadData->timeInShop = 0;
     threadData->theThread = (pthread_t*) malloc(sizeof(pthread_t));
-    pthread_create(pirate, NULL, (void*) &costumeDept, threadData);
+    pthread_create(threadData->theThread, NULL, (void*) &costumeDept, threadData);
   }
 
   //Join the threads
