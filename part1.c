@@ -65,9 +65,9 @@ void costumeDept(AdventurerData *person){
         			&& costumeShop->numTeamsAvailable > 0
         			&& !costumeShop->blockPirates){
           costumeShop->numTeamsAvailable--;
-          costumeShop->numPiratesWaiting--;
           costumeShop->piratesInShop++;
           isEntering = 1;
+          if(costumeShop->numPiratesWaiting) costumeShop->numPiratesWaiting--;
         }
         else if(person->minutesWaiting == 0){
           costumeShop->numPiratesWaiting++;
@@ -78,23 +78,25 @@ void costumeDept(AdventurerData *person){
         			&& costumeShop->numTeamsAvailable > 0
         			&& !costumeShop->blockNinjas){
           costumeShop->numTeamsAvailable--;
-          costumeShop->numNinjasWaiting--;
           costumeShop->ninjasInShop++;
           isEntering = 1;
+          if(costumeShop->numNinjasWaiting) costumeShop->numNinjasWaiting--;
         }
         else if(person->minutesWaiting == 0){
           costumeShop->numNinjasWaiting++;
         }
       }
       sem_post(costumeShop->doorLock);
-      person->minutesWaiting++;
-      if(!isEntering)
-        sleep(1);
+      if(!isEntering){
+        //printf("Can't get in\n");
+          person->minutesWaiting++;
+          sleep(1);
+      }
     }
 
     //if there is an available team, go into the costume shop
     //Wait should never actually put a thread to sleep
-    printf("We be in the shop bois\n");
+    printf("We be in the shop bois %d %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     if(person->isArr) printf("Yo ho, me harties!\n");
     else printf("...\n");
     sem_wait(costumeShop->teams);
@@ -106,14 +108,17 @@ void costumeDept(AdventurerData *person){
     }
     //relinquish a team
     sem_post(costumeShop->teams);
+
+    sem_wait(costumeShop->doorLock);
     printf("Lookin' spiffy, as always ;)\n");
     //leave the costume shop
-    sem_wait(costumeShop->doorLock);
     costumeShop->numTeamsAvailable++;
     if(person->isArr){
+      printf("Yo ho, me harties!\n");
       costumeShop->piratesInShop--;
     }
     else{
+      printf("...\n");
       costumeShop->ninjasInShop--;
     }
     sem_post(costumeShop->doorLock);
@@ -123,7 +128,7 @@ void costumeDept(AdventurerData *person){
       needsCostume = 0;
       printf("I know my lines, b*tch %d %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     }
-    else printf("gotta get those lines right\n");
+    else printf("gotta get those lines right%d %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
   }
   printf("Here comes the reaper\n");
   pthread_exit(NULL);
