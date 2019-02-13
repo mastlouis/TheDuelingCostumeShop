@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
-//#include <sys/time.h>
+#include <sys/time.h>
 
 #define MAX_SIDE_CHANGE (30)
 #define MAX_VISITS (20)
@@ -38,6 +38,14 @@ typedef struct ShopData_{
   int pirateMaxWait; //The maximum time for which ninjas may control the shop
   int ninjaWaitMultiplier; //The scale factor for ninjaMaxWait (in case of backup)
   int pirateWaitMultiplier; //The scale factor for pirateMaxWait (in case of backup)
+
+  //Information for average queue size
+
+  struct timeval *initialTime;
+  struct timeval *lastUpdate;
+  struct timeval *endTime;
+  double peopleTimesTime;
+
 } ShopData;
 
 typedef struct VisitData_{
@@ -71,6 +79,9 @@ void costumeDept(AdventurerData *person){
   ShopData *costumeShop = person->theShop;
   int needsCostume = 1;
   int isEntering = 0;
+  int secondsElapsed = 0;
+  int uSecondsElapsed = 0;
+  struct timeval currentTime;
   while(needsCostume){
     //Aaaadventure time
     if(person->isArr) sleep(getRandNormNum(costumeShop->avgArrPirate));
@@ -82,7 +93,13 @@ void costumeDept(AdventurerData *person){
 
     while(!isEntering){
       sem_wait(costumeShop->doorLock);
-      
+
+      //Record some statistics about the line
+      gettimeofday(currentTime, NULL);
+      //Note to self: multiply # people in line by time elapsed
+
+
+
       /*
       Unfortunately, the separation of pirates and ninjas into separate
       variables necessitates large separate blocks for each faction.
@@ -292,6 +309,14 @@ int main(int argc, char* argv[]){
   costumeShop->avgCostNinja = avgCostNinja;
   costumeShop->avgCostPirate = avgCostPirate;
 
+  //Variables for statistics
+  costumeShop->initialTime = malloc(sizeof(struct timeval));
+  costumeShop->lastUpdate = malloc(sizeof(struct timeval));
+  costumeShop->endTime = malloc(sizeof(struct timeval));
+  costumeShop->peopleTimesTime = 0;
+  gettimeofday(initialTime, NULL);
+  gettimeofday(lastUpdate, NULL);
+
   //Variables for fairness
   costumeShop->blockPirates = 0;
   costumeShop->blockNinjas = 0;
@@ -350,6 +375,7 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < numPirates + numNinjas; i++){
     pthread_join(*(theAdventurers[i]->theThread), NULL);
   }
+  gettimeofday(custumeShop->endTime, NULL);
   printStatistics(theAdventurers, numPirates, numNinjas);
 
   //Free the threads here if that's something we should do
@@ -363,6 +389,9 @@ int main(int argc, char* argv[]){
   }
   free(theAdventurers);
 
+  free(costumeShop->initialTime);
+  free(costumeShop->lastUpdate);
+  free(costumeShop->endTime);
   free(costumeShop->doorLock);
   free(costumeShop->teams);
   free(costumeShop);
