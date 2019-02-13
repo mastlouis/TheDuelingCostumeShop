@@ -1,2 +1,258 @@
-Incorrect argument entry! Arguments are are follows:
-	 ./part1 <number of teams> <number of pirates> <number of ninjas> <average pirate costuming time> <average ninja costuming time> <average pirate arrival time> <average ninja arrival time>
+Max pirate wait: 22
+Ninja max wait: 24
++++ Ninja arrived
+Pirates: 0 Ninjas: 1
+	Ninja Entered! Time waited: 0
++++ Ninja arrived
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 0
++++ Ninja arrived
++++ Ninja arrived
++++ Ninja arrived
++++ Ninja arrived
++++  Pirate Arrived
++++ Ninja arrived
++++ Ninja arrived
++++ Ninja arrived
++++  Pirate Arrived
++++ Ninja arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
++++  Pirate Arrived
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 10
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 10
+	Ninja Left!
+	Ninja Left!
+Pirates: 0 Ninjas: 1
+	Ninja Entered! Time waited: 17
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 17
++++ Ninja arrived
++++ Ninja arrived
+A pirate has blocked the ninjas. New multiplier: 2
+	Ninja Left!
+	Ninja Left!
++++ Ninja arrived
+Pirates: 1 Ninjas: 0
+	Pirate entered! Time waited: 14
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 15
++++ Ninja arrived
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 27
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 32
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 27
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 29
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 37
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 38
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 41
+	Pirate Left!
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 38
+A ninja has blocked the pirates. New Multiplier: 3
+	Pirate Left!
+	Pirate Left!
+Pirates: 0 Ninjas: 1
+	Ninja Entered! Time waited: 57
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 56
++++  Pirate Arrived
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 61
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 44
++++  Pirate Arrived
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 40
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 46
+A pirate has blocked the ninjas. New multiplier: 4
+	Ninja Left!
+	Ninja Left!
+Pirates: 1 Ninjas: 0
+	Pirate entered! Time waited: 65
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 68
++++ Ninja arrived
++++ Ninja arrived
+	Pirate Left!
+	Pirate Left!
+Pirates: 1 Ninjas: 0
+	Pirate entered! Time waited: 13
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 16
+	Pirate Left!
+	Pirate Left!
++++  Pirate Arrived
+Pirates: 1 Ninjas: 0
+	Pirate entered! Time waited: 0
++++  Pirate Arrived
+Pirates: 2 Ninjas: 0
+	Pirate entered! Time waited: 0
+	Pirate Left!
+	Pirate Left!
+A ninja has blocked the pirates. New Multiplier: 5
+Pirates: 0 Ninjas: 1
+	Ninja Entered! Time waited: 26
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 27
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 104
+	Ninja Left!
+Pirates: 0 Ninjas: 2
+	Ninja Entered! Time waited: 77
+	Ninja Left!
+	Ninja Left!
++++ Ninja arrived
+Pirates: 0 Ninjas: 1
+	Ninja Entered! Time waited: 0
+	Ninja Left!
+
+
+**** Statistics ****
+
+
+Mr. Scurvington (sr.) the pirate went to the shop 2 times.
+	Visit 0 wait time: 68
+		Time in store: 8
+	Visit 1 wait time: 0
+		Time in store: 7
+	Total Gold owed: 0
+Arrthurr the pirate went to the shop 2 times.
+	Visit 0 wait time: 65
+		Time in store: 8
+	Visit 1 wait time: 0
+		Time in store: 6
+	Total Gold owed: 0
+Bearded Dave the pirate went to the shop 1 times.
+	Visit 0 wait time: 41
+		Time in store: 10
+	Total Gold owed: 0
+The Flying Dutchman the pirate went to the shop 2 times.
+	Visit 0 wait time: 38
+		Time in store: 10
+	Visit 1 wait time: 16
+		Time in store: 4
+	Total Gold owed: 16
+Scurvy Jim the pirate went to the shop 1 times.
+	Visit 0 wait time: 37
+		Time in store: 3
+	Total Gold owed: 0
+Arrnold the pirate went to the shop 1 times.
+	Visit 0 wait time: 27
+		Time in store: 5
+	Total Gold owed: 27
+The Walking Dutchman the pirate went to the shop 2 times.
+	Visit 0 wait time: 38
+		Time in store: 5
+	Visit 1 wait time: 13
+		Time in store: 5
+	Total Gold owed: 13
+Mr. Scurvingtom (jr.) the pirate went to the shop 1 times.
+	Visit 0 wait time: 32
+		Time in store: 3
+	Total Gold owed: 0
+The Crawling Dutchman the pirate went to the shop 1 times.
+	Visit 0 wait time: 29
+		Time in store: 5
+	Total Gold owed: 29
+Scurvy Tom the pirate went to the shop 1 times.
+	Visit 0 wait time: 14
+		Time in store: 10
+	Total Gold owed: 14
+Howling Harrold the pirate went to the shop 1 times.
+	Visit 0 wait time: 15
+		Time in store: 8
+	Total Gold owed: 15
+The Laying Dutchman the pirate went to the shop 1 times.
+	Visit 0 wait time: 27
+		Time in store: 3
+	Total Gold owed: 27
+... the ninja went to the shop 3 times.
+	Visit 0 wait time: 10
+		Time in store: 6
+	Visit 1 wait time: 44
+		Time in store: 5
+	Visit 2 wait time: 26
+		Time in store: 9
+	Total Gold owed: 36
+Swift Wind the ninja went to the shop 1 times.
+	Visit 0 wait time: 56
+		Time in store: 6
+	Total Gold owed: 0
+Ninja Ninjington the ninja went to the shop 1 times.
+	Visit 0 wait time: 61
+		Time in store: 2
+	Total Gold owed: 0
+Ninja Ninjington the ninja went to the shop 1 times.
+	Visit 0 wait time: 0
+		Time in store: 14
+	Total Gold owed: 0
+Ninja Ninjington the ninja went to the shop 3 times.
+	Visit 0 wait time: 17
+		Time in store: 5
+	Visit 1 wait time: 40
+		Time in store: 0
+	Visit 2 wait time: 27
+		Time in store: 8
+	Total Gold owed: 44
+Ninja Ninjington the ninja went to the shop 2 times.
+	Visit 0 wait time: 10
+		Time in store: 5
+	Visit 1 wait time: 46
+		Time in store: 0
+	Total Gold owed: 10
+Ninja Ninjington the ninja went to the shop 1 times.
+	Visit 0 wait time: 57
+		Time in store: 5
+	Total Gold owed: 0
+Ninja Ninjington the ninja went to the shop 3 times.
+	Visit 0 wait time: 17
+		Time in store: 7
+	Visit 1 wait time: 77
+		Time in store: 1
+	Visit 2 wait time: 0
+		Time in store: 7
+	Total Gold owed: 17
+Ninja Ninjington the ninja went to the shop 1 times.
+	Visit 0 wait time: 104
+		Time in store: 4
+	Total Gold owed: 0
+Ninja Ninjington the ninja went to the shop 1 times.
+	Visit 0 wait time: 0
+		Time in store: 12
+	Total Gold owed: 0
+The shop spent 10 gold on 2 teams
+Gross revenue: 248
+Total visits: 33
+Gold per visit: 7.515152
+Total profit: 238

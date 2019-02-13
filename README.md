@@ -4,6 +4,9 @@ Questions for the TA
 -Can we treat the teams as indestinguishable?
 -Do MA drivers always enter the intersection if then can?
 	-How do we avoid deadlocks?
+-How "Itemized" is an Itemized receipt?
+
+
 
 Matthew's Ideas (Just to gather them into one place):
 
