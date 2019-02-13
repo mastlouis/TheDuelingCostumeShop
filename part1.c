@@ -79,8 +79,8 @@ void costumeDept(AdventurerData *person){
   ShopData *costumeShop = person->theShop;
   int needsCostume = 1;
   int isEntering = 0;
-  int secondsElapsed = 0;
-  int uSecondsElapsed = 0;
+  long int secondsElapsed = 0;
+  long int uSecondsElapsed = 0;
   struct timeval currentTime;
   while(needsCostume){
     //Aaaadventure time
@@ -95,7 +95,19 @@ void costumeDept(AdventurerData *person){
       sem_wait(costumeShop->doorLock);
 
       //Record some statistics about the line
-      gettimeofday(currentTime, NULL);
+      gettimeofday(&currentTime, NULL);
+      secondsElapsed = currentTime.tv_sec - costumeShop->lastUpdate->tv_sec;
+      uSecondsElapsed = currentTime.tv_usec - costumeShop->lastUpdate->tv_usec;
+
+      //Add the number of people waiting scaled by the time for which 
+      //they've been waiting to the running total
+      costumeShop->peopleTimesTime += (costumeShop->numPiratesWaiting + costumeShop->numNinjasWaiting) * 
+          (secondsElapsed + (((double) uSecondsElapsed) / 1000000.0));
+
+      //Prepare time statistics for the next thread
+      costumeShop->lastUpdate->tv_sec = currentTime.tv_sec;
+      costumeShop->lastUpdate->tv_usec = currentTime.tv_usec;
+
       //Note to self: multiply # people in line by time elapsed
 
 
@@ -228,7 +240,7 @@ void costumeDept(AdventurerData *person){
     person->visits[person->numVisits]->timeInShop = person->timeInShop;
     person->visits[person->numVisits]->moneySpent = 0;
     if(person->minutesWaiting < 30)
-      person->visits[person->numVisits]->moneySpent = person->minutesWaiting;
+      person->visits[person->numVisits]->moneySpent = person->timeInShop;
     person->totalTimeInShop += person->timeInShop;
     person->totalTimeWaiting += person->minutesWaiting;
     person->totalMoneySpent += person->visits[person->numVisits]->moneySpent;
@@ -314,8 +326,8 @@ int main(int argc, char* argv[]){
   costumeShop->lastUpdate = malloc(sizeof(struct timeval));
   costumeShop->endTime = malloc(sizeof(struct timeval));
   costumeShop->peopleTimesTime = 0;
-  gettimeofday(initialTime, NULL);
-  gettimeofday(lastUpdate, NULL);
+  gettimeofday(costumeShop->initialTime, NULL);
+  gettimeofday(costumeShop->lastUpdate, NULL);
 
   //Variables for fairness
   costumeShop->blockPirates = 0;
@@ -375,7 +387,7 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < numPirates + numNinjas; i++){
     pthread_join(*(theAdventurers[i]->theThread), NULL);
   }
-  gettimeofday(custumeShop->endTime, NULL);
+  gettimeofday(costumeShop->endTime, NULL);
   printStatistics(theAdventurers, numPirates, numNinjas);
 
   //Free the threads here if that's something we should do
@@ -403,6 +415,7 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
   ShopData* theShop;
   int grossRevenue = 0;
   int totalVisits = 0;
+  double timeElapsed = 0;
   printf("\n\n**** Statistics ****\n\n\n");
   //Itemized bills for each pirate and ninja
 
@@ -444,6 +457,10 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
     printf("Gold per visit: %f\n", ((double) grossRevenue) / ((double) totalVisits));
     printf("Total profit: %d\n", grossRevenue - (5 * theShop->numTeams));
   }
+
+  timeElapsed = (theShop->endTime->tv_sec - theShop->initialTime->tv_sec) + (0.000001 * (theShop->endTime->tv_usec - theShop->initialTime->tv_usec));
+  printf("The shop was open for %f minutes\n", timeElapsed);
+  printf("Average line size was %f people\n", theShop->peopleTimesTime / timeElapsed);
 }
 
 char* getPirateName(int i){
@@ -455,14 +472,15 @@ char* getPirateName(int i){
     case(4): return "Scurvy Jim";
     case(5): return "Arrnold";
     case(6): return "The Walking Dutchman";
-    case(7): return "Mr. Scurvingtom (jr.)";
+    case(7): return "Mr. Scurvington (jr.)";
     case(8): return "The Crawling Dutchman";
     case(9): return "Scurvy Tom";
-    case(10): return "Howling Harrold";
+    case(10): return "Howling Harrrold";
     case(11): return "The Laying Dutchman";
     case(12): return "Arrrline";
     case(13): return "Quatheryne";
     case(14): return "ma~ (pronounced Matilda)";
+    case(15): return "Johnny Depp";
     case(38): return "Professor Shue";
     case(39): return "Professor Walls";
     default: return "Pirate McPirateson";
@@ -472,9 +490,21 @@ char* getPirateName(int i){
 char* getNinjaName(int i){
   switch(i){
     case(0): return "...";
-
     case(1): return "Swift Wind";
-    case(49): return "Smoke";
+    case(2): return "Donatello";
+    case(3): return "Michaelangelo";
+    case(4): return "Rafael";
+    case(5): return "Leonardo";
+    case(6): return "Bruce Lee";
+    case(7): return "Danny Avidan";
+    case(8): return "Striking Kobra";
+    case(9): return "Silent Lightning";
+    case(10): return "Kung Foo Panda";
+    case(11): return "Kung Bar Panda";
+    case(12): return "Kung Baz Panda";
+    case(13): return "Dave";
+    case(49): return "Smoke Weed";
+    //Make the TA's ninjas
     default: return "Ninja Ninjington";
   }
 }
