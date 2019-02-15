@@ -123,7 +123,7 @@ void costumeDept(AdventurerData *person){
           if(person->minutesWaiting == 0)
             costumeShop->numPiratesWaiting++;
           //If the shop may lose money by not letting in this Pirate soon
-          if(person->minutesWaiting 
+          if(person->minutesWaiting
               >= ((costumeShop->pirateMaxWait * costumeShop->pirateWaitMultiplier) - 1)
               && !costumeShop->blockNinjas){
             //Block ninjas but let in pirates
@@ -155,7 +155,7 @@ void costumeDept(AdventurerData *person){
           if(person->minutesWaiting == 0)
             costumeShop->numNinjasWaiting++;
           //If the shop may lose money by not letting in this Ninja soon
-          if((person->minutesWaiting 
+          if((person->minutesWaiting
               >= ((costumeShop->ninjaMaxWait * costumeShop->ninjaWaitMultiplier) - 1))
               && !costumeShop->blockPirates){
             //Block pirates but let in ninjas
@@ -178,10 +178,10 @@ void costumeDept(AdventurerData *person){
       }
     }
 
-    printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop); 
+    printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     if(person->isArr) printf("\tPirate entered! Time waited: %d\n", person->minutesWaiting);
     else printf("\tNinja Entered! Time waited: %d\n", person->minutesWaiting);
-    
+
     //if there is an available team, go into the costume shop
     //Wait should never actually put a thread to sleep
     sem_wait(costumeShop->teams);
@@ -375,7 +375,7 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < numPirates + numNinjas; i++){
     pthread_join(*(theAdventurers[i]->theThread), NULL);
   }
-  gettimeofday(custumeShop->endTime, NULL);
+  gettimeofday(costumeShop->endTime, NULL);
   printStatistics(theAdventurers, numPirates, numNinjas);
 
   //Free the threads here if that's something we should do
