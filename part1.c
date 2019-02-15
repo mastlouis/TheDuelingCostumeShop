@@ -16,6 +16,7 @@ typedef struct ShopData_{
   int numPirates;
   int numNinjas;
   int numTeams;
+  int* teamsAvailable; //Ints representing whether or not each team is available
   double avgCostPirate, avgCostNinja, avgArrPirate, avgArrNinja;
 
   //Semaphores
@@ -49,6 +50,7 @@ typedef struct ShopData_{
 } ShopData;
 
 typedef struct VisitData_{
+  int teamUsed;
   int moneySpent;
   int timeWaited;
   int timeInShop;
@@ -57,6 +59,7 @@ typedef struct VisitData_{
 typedef struct AdventurerData_{
   ShopData* theShop;
   int isArr;
+  int id;
   int minutesWaiting;
   pthread_t* theThread;
   int numVisits;
@@ -73,32 +76,37 @@ double getRandNormNum(double avg);
 char* getPirateName(int i);
 char* getNinjaName(int i);
 void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNinjas);
+int getNextTeam(int numTeams, int* teamsAvailable);
 
 void costumeDept(AdventurerData *person){
   //Extract the data from the person struct to make code more readable
   ShopData *costumeShop = person->theShop;
   int needsCostume = 1;
   int isEntering = 0;
-  int secondsElapsed = 0;
-  int uSecondsElapsed = 0;
+  long int secondsElapsed = 0;
+  long int uSecondsElapsed = 0;
   struct timeval currentTime;
   while(needsCostume){
     //Aaaadventure time
     if(person->isArr) sleep(getRandNormNum(costumeShop->avgArrPirate));
     else sleep(getRandNormNum(costumeShop->avgArrNinja));
 
-    if(person->isArr) printf("+++  Pirate Arrived\n");
-    else printf("+++ Ninja arrived\n");
-    //printf("Walk up to the shop like what up I got a big sword\n");
-
     while(!isEntering){
       sem_wait(costumeShop->doorLock);
 
       //Record some statistics about the line
-      gettimeofday(currentTime, NULL);
-      //Note to self: multiply # people in line by time elapsed
+      gettimeofday(&currentTime, NULL);
+      secondsElapsed = currentTime.tv_sec - costumeShop->lastUpdate->tv_sec;
+      uSecondsElapsed = currentTime.tv_usec - costumeShop->lastUpdate->tv_usec;
 
+      //Add the number of people waiting scaled by the time for which 
+      //they've been waiting to the running total
+      costumeShop->peopleTimesTime += (costumeShop->numPiratesWaiting + costumeShop->numNinjasWaiting) * 
+          (secondsElapsed + (((double) uSecondsElapsed) / 1000000.0));
 
+      //Prepare time statistics for the next thread
+      costumeShop->lastUpdate->tv_sec = currentTime.tv_sec;
+      costumeShop->lastUpdate->tv_usec = currentTime.tv_usec;
 
       /*
       Unfortunately, the separation of pirates and ninjas into separate
@@ -139,7 +147,7 @@ void costumeDept(AdventurerData *person){
 
       //If the person is a ninja
       else{
-        //If ninja can enter the shop
+        //If the ninja can enter the shop
         if(!costumeShop->piratesInShop
             && costumeShop->numTeamsAvailable > 0
             && !costumeShop->blockNinjas){
@@ -169,6 +177,14 @@ void costumeDept(AdventurerData *person){
         }
       }
 
+      if(isEntering){
+        person->visits[person->numVisits] = (VisitData*) malloc(sizeof(VisitData));
+        if((person->visits[person->numVisits]->teamUsed 
+              = getNextTeam(costumeShop->numTeams, costumeShop->teamsAvailable)) == -1)
+          //In case something went wrong and no teams are available
+          printf(" No teams available, somehow\n");
+      }
+
       //release control of the doors
       sem_post(costumeShop->doorLock);
 
@@ -176,15 +192,19 @@ void costumeDept(AdventurerData *person){
         person->minutesWaiting++;
         sleep(1);
       }
+      
     }
 
-    printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
-    if(person->isArr) printf("\tPirate entered! Time waited: %d\n", person->minutesWaiting);
-    else printf("\tNinja Entered! Time waited: %d\n", person->minutesWaiting);
+    //printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop); 
+    if(person->isArr) printf("%s the pirate is entering the shop with team %d. Time waited: %d\n"
+        , getPirateName(person->id), person->visits[person->numVisits]->teamUsed, person->minutesWaiting);
+    else printf("%s the ninja is entering the shop with team %d. Time waited: %d\n"
+        , getNinjaName(person->id - costumeShop->numPirates), person->visits[person->numVisits]->teamUsed, person->minutesWaiting);
 
     //if there is an available team, go into the costume shop
     //Wait should never actually put a thread to sleep
     sem_wait(costumeShop->teams);
+
     if(person->isArr){
       person->timeInShop = getRandNormNum(costumeShop->avgCostPirate);
       sleep(person->timeInShop);
@@ -193,42 +213,48 @@ void costumeDept(AdventurerData *person){
       person->timeInShop = getRandNormNum(costumeShop->avgCostNinja);
       sleep(person->timeInShop);
     }
-    //relinquish a team
-    sem_post(costumeShop->teams);
 
     //Grab the door lock to leave the shop
     sem_wait(costumeShop->doorLock);
-    //printf("Lookin' spiffy, as always ;)\n");
-    //leave the costume shop
+
+
+    //relinquish a team
+    sem_post(costumeShop->teams);
     costumeShop->numTeamsAvailable++;
 
     //If the person leaving is a pirate
     if(person->isArr){
-      printf("\tPirate Left!\n");
       costumeShop->piratesInShop--;
       //If there are no pirates waiting
-      if(costumeShop->numPiratesWaiting == 0)
+      if(costumeShop->numPiratesWaiting == 0){
         costumeShop->pirateWaitMultiplier = 1;
+        costumeShop->blockNinjas = 0;
+      }
+
     }
 
     //If the person leaving is a ninja
     else{
-      printf("\tNinja Left!\n");
       costumeShop->ninjasInShop--;
       //If there are no ninjas waiting
       if(costumeShop->numNinjasWaiting == 0)
         costumeShop->ninjaWaitMultiplier = 1;
+        costumeShop->blockPirates = 0;
     }
+
+    //Mark the team used as available
+    if(person->visits[person->numVisits]->teamUsed >= 0)
+      costumeShop->teamsAvailable[person->visits[person->numVisits]->teamUsed] = 0;
 
     sem_post(costumeShop->doorLock);
 
     //Gather those statistics
-    person->visits[person->numVisits] = (VisitData*) malloc(sizeof(VisitData));
+    //Doesn't change costumeShop data, so locking unnecessary
     person->visits[person->numVisits]->timeWaited = person->minutesWaiting;
     person->visits[person->numVisits]->timeInShop = person->timeInShop;
     person->visits[person->numVisits]->moneySpent = 0;
     if(person->minutesWaiting < 30)
-      person->visits[person->numVisits]->moneySpent = person->minutesWaiting;
+      person->visits[person->numVisits]->moneySpent = person->timeInShop;
     person->totalTimeInShop += person->timeInShop;
     person->totalTimeWaiting += person->minutesWaiting;
     person->totalMoneySpent += person->visits[person->numVisits]->moneySpent;
@@ -236,17 +262,15 @@ void costumeDept(AdventurerData *person){
     //let there be a 25% chance that the pirate or ninja will return to the costume shop
     if(rand()%4 || person->numVisits >= MAX_VISITS){
       needsCostume = 0;
-      //printf("I know my lines, b*tch %d %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     }
     //Path for pirates or ninjas that plan to come back later
     else{
       isEntering = 0;
       person->minutesWaiting = 0;
       person->timeInShop = 0;
-      //printf("gotta get those lines right%d %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     }
   }
-  //printf("Here comes the reaper\n");
+  //If a thread leaves the while loop, it's done executing
   pthread_exit(NULL);
 }
 
@@ -309,13 +333,19 @@ int main(int argc, char* argv[]){
   costumeShop->avgCostNinja = avgCostNinja;
   costumeShop->avgCostPirate = avgCostPirate;
 
+  costumeShop->teamsAvailable = (int *) calloc(numTeams, sizeof(int*));
+  for(int i = 0; i < numTeams; i++){
+    costumeShop->teamsAvailable[i] = 0;
+    //0 means that a team is free, while 1 means that the team is occupied
+  }
+
   //Variables for statistics
   costumeShop->initialTime = malloc(sizeof(struct timeval));
   costumeShop->lastUpdate = malloc(sizeof(struct timeval));
   costumeShop->endTime = malloc(sizeof(struct timeval));
   costumeShop->peopleTimesTime = 0;
-  gettimeofday(initialTime, NULL);
-  gettimeofday(lastUpdate, NULL);
+  gettimeofday(costumeShop->initialTime, NULL);
+  gettimeofday(costumeShop->lastUpdate, NULL);
 
   //Variables for fairness
   costumeShop->blockPirates = 0;
@@ -342,9 +372,6 @@ int main(int argc, char* argv[]){
   sem_init(costumeShop->teams, 0, numTeams);
   sem_init(costumeShop->doorLock, 0, 1);
 
-  printf("Max pirate wait: %d\n", costumeShop->pirateMaxWait);
-  printf("Ninja max wait: %d\n", costumeShop->ninjaMaxWait);
-
   for(int i = 0; i < numPirates + numNinjas; i++){
     AdventurerData* threadData = (AdventurerData*) malloc(sizeof(AdventurerData));
     theAdventurers[i] = threadData;
@@ -362,9 +389,10 @@ int main(int argc, char* argv[]){
     threadData->totalTimeWaiting = 0;
     threadData->timeInShop = 0;
     threadData->totalMoneySpent = 0;
+    threadData->id = i;
 
     //Initialize the array of visits
-    threadData->visits = (VisitData **) calloc(MAX_VISITS, sizeof(VisitData*));
+    threadData->visits = (VisitData**) calloc(MAX_VISITS, sizeof(VisitData*));
 
     //Make the thread and send it on its way
     threadData->theThread = (pthread_t*) malloc(sizeof(pthread_t));
@@ -389,21 +417,63 @@ int main(int argc, char* argv[]){
   }
   free(theAdventurers);
 
+  /*free(costumeShop->teamsAvailable);
   free(costumeShop->initialTime);
   free(costumeShop->lastUpdate);
   free(costumeShop->endTime);
   free(costumeShop->doorLock);
   free(costumeShop->teams);
-  free(costumeShop);
+  free(costumeShop);*/
 
   return 0;
 }
 
+/*
+* Takes as parameters the number of costuming teams
+* and an array of the availability of the costuming
+* teams, wherein 0 represents a free team and 1
+* represents a busy team. 
+* Also changes the availability of the returned team
+* from free to busy.
+* 
+* Returns the index of the next available team or 
+* -1 if all teams are busy.
+*/
+int getNextTeam(int numTeams, int* teamsAvailable){
+  //Uses a static variable to distribute the work
+  //more evenly amongst the teams
+  static int nextTeam = 0;
+  int initialTeam = nextTeam;
+  int teamToReturn = -1;
+  while(teamToReturn == -1){
+    if(teamsAvailable[nextTeam] == 0){
+      teamsAvailable[nextTeam] = 1;
+      teamToReturn = nextTeam;
+    }
+    nextTeam++;
+    nextTeam %= numTeams;
+    if(nextTeam == initialTeam)
+      return -1;
+  }
+  return teamToReturn;
+}
+
 void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNinjas){
   ShopData* theShop;
+  int *teamTimeBusy;
   int grossRevenue = 0;
   int totalVisits = 0;
+  double timeElapsed = 0;
   printf("\n\n**** Statistics ****\n\n\n");
+
+  if(numPirates + numNinjas > 0){
+    theShop = theAdventurers[0]->theShop;
+    teamTimeBusy = (int*) calloc(theShop->numTeams, sizeof(int));
+  }
+  else{
+    printf("There were no pirates or ninjas. Nothing to report.\n");
+    return;
+  }
   //Itemized bills for each pirate and ninja
 
   //For each person:
@@ -414,15 +484,18 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
     //Total gold owed
   for(int i = 0; i < numPirates + numNinjas; i++){
     if(i < numPirates){
-      printf("%s the pirate went to the shop %d times.\n", getPirateName(i), theAdventurers[i]->numVisits);
+      printf("%19s the pirate went to the shop %d time%s\n", getPirateName(i), 
+        theAdventurers[i]->numVisits, (theAdventurers[i]->numVisits > 1)? ".": "s.");
     }
     else{
-      printf("%s the ninja went to the shop %d times.\n", getNinjaName(i - numPirates), theAdventurers[i]->numVisits);
+      printf("%20s the ninja went to the shop %d times.\n", getNinjaName(i - numPirates), theAdventurers[i]->numVisits);
     }
     totalVisits += theAdventurers[i]->numVisits;
     for(int j = 0; j < theAdventurers[i]->numVisits; j++){
       printf("\tVisit %d wait time: %d\n", j, theAdventurers[i]->visits[j]->timeWaited);
-      printf("\t\tTime in store: %d\n", theAdventurers[i]->visits[j]->timeInShop);
+      printf("\t\tTeam used: %d", theAdventurers[i]->visits[j]->teamUsed); //Lack of new line intended
+      printf("  Time in store: %d\n", theAdventurers[i]->visits[j]->timeInShop);
+      teamTimeBusy[theAdventurers[i]->visits[j]->teamUsed] += theAdventurers[i]->visits[j]->timeInShop;
     }
     printf("\tTotal Gold owed: %d\n", theAdventurers[i]->totalMoneySpent);
     grossRevenue += theAdventurers[i]->totalMoneySpent;
@@ -435,15 +508,23 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
   //Gold per visit
   //Total profits
 
-  if(numPirates + numNinjas > 0){
-    theShop = theAdventurers[0]->theShop;
-    printf("The shop spent %d gold on %d teams\n", theShop->numTeams * 5, theShop->numTeams);
-    printf("Gross revenue: %d\n", grossRevenue);
+  
+  printf("The shop spent %d gold on %d teams\n", theShop->numTeams * 5, theShop->numTeams);
+  printf("Gross revenue: %d\n", grossRevenue);
+  printf("Total visits: %d\n", totalVisits);
+  printf("Gold per visit: %f\n", ((double) grossRevenue) / ((double) totalVisits));
+  printf("Total profit: %d\n", grossRevenue - (5 * theShop->numTeams));
 
-    printf("Total visits: %d\n", totalVisits);
-    printf("Gold per visit: %f\n", ((double) grossRevenue) / ((double) totalVisits));
-    printf("Total profit: %d\n", grossRevenue - (5 * theShop->numTeams));
+  timeElapsed = (theShop->endTime->tv_sec - theShop->initialTime->tv_sec) + (0.000001 * (theShop->endTime->tv_usec - theShop->initialTime->tv_usec));
+  printf("The shop was open for %f minutes\n", timeElapsed);
+  printf("Average line size was %f people\n", theShop->peopleTimesTime / timeElapsed);
+
+  //printf("Team time busy array: %p\n", teamTimeBusy);
+  for(int i = 0; i < theShop->numTeams; i++){
+    printf("Team %d was busy for %d minutes and free for %f minutes\n", i, teamTimeBusy[i], timeElapsed - teamTimeBusy[i]);
   }
+
+  //free(teamTimeBusy);
 }
 
 char* getPirateName(int i){
@@ -455,14 +536,19 @@ char* getPirateName(int i){
     case(4): return "Scurvy Jim";
     case(5): return "Arrnold";
     case(6): return "The Walking Dutchman";
-    case(7): return "Mr. Scurvingtom (jr.)";
+    case(7): return "Mr. Scurvington (jr.)";
     case(8): return "The Crawling Dutchman";
     case(9): return "Scurvy Tom";
-    case(10): return "Howling Harrold";
+    case(10): return "Howling Harrrold";
     case(11): return "The Laying Dutchman";
     case(12): return "Arrrline";
     case(13): return "Quatheryne";
     case(14): return "ma~ (pronounced Matilda)";
+    case(15): return "Johnny Depp";
+    case(16): return "Patchy";
+    case(17): return "Peggy";
+    case(18): return "Candybeard";
+    case(19): return "Nabstr";
     case(38): return "Professor Shue";
     case(39): return "Professor Walls";
     default: return "Pirate McPirateson";
@@ -472,9 +558,24 @@ char* getPirateName(int i){
 char* getNinjaName(int i){
   switch(i){
     case(0): return "...";
-
     case(1): return "Swift Wind";
-    case(49): return "Smoke";
+    case(2): return "Donatello";
+    case(3): return "Michaelangelo";
+    case(4): return "Rafael";
+    case(5): return "Leonardo";
+    case(6): return "Bruce Lee";
+    case(7): return "Danny Avidan";
+    case(8): return "Striking Kobra";
+    case(9): return "Silent Lightning";
+    case(10): return "Kung Foo Panda";
+    case(11): return "Kung Bar Panda";
+    case(12): return "Kung Baz Panda";
+    case(13): return "Dave";
+    case(14): return "Sasuke";
+    case(15): return "That girl from Kingsman";
+    case(16): return "That DC superhero Katana";
+    case(49): return "Smoke Weed";
+    //Make the TA's ninjas
     default: return "Ninja Ninjington";
   }
 }
