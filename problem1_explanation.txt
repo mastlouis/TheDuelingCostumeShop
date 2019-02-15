@@ -1,0 +1,38 @@
+Matthew St. Louis & Fay Whittall
+Problem 1 (Costume Shop) Explanation
+
+**********************
+Concept
+**********************
+
+In order to make the costume department more fair, we implemented a system wherein pirates and ninjas have the ability to block the other faction if they've been waiting for a certain amount of time. This amount of time is thirty minutes (the amount of time after which a pirate or ninja will receive their costume for free) minus one minute longer than the average time taken to costume someone of the other faction. The hope behind this is that there will be just enough time for the shop to empty out and let in people who are waiting before they would get their costumes for free.
+
+**********************
+Details
+**********************
+
+The problem with this solution in its simplest form is what to do when the shop gets so backed up that some pirates and ninjas have been waiting for so long that they should each be blocking the other. To address this problem, we added a scaling factor on each faction's critical time (the time after which they should block the other side), and these scaling factors get incremented with each successive block until one line (either the line of pirates or the line of ninjas) becomes empty, at which point each scaling factor will be reset.
+
+**********************
+Explanation
+**********************
+
+This solution attempts to maximize profit by attempting to let in as many people as possible before they can get costumed for free. The solution will not always be effective because the wait times are unpredictable and pseudorandomly generated. Another weakness of the solution is that if one side has been waiting for a very long time, the other side must also wait a very long time. This can be frustrating for the people involved, and the shop will likely lose a lot of money to customers who could have been let in but were blocked, but we would argue that this is this is a fair way to run the shop that allows both factions access to the shop.
+
+If the shop only sought to make money, the strategy would be to let in someone who's been waiting longest with a maximum of 29 minutes and to leave anyone who had been waiting for more than 30 minutes until the end. Serving customers who will get their cosumes for free only holds up potential paying customers.
+
+**********************
+Analysis
+**********************
+
+This is an analysis of the example execution of the program shown below. For the example execution, the command given to run the program was ./part1 3 11 12 6 3 5 7, which runs the program with the following parameters:
+
+Number of costuming teams: 3
+Number of pirates: 11
+Number of ninjas: 10
+Average pirate costuming time: 6
+Average ninja costuming time: 3
+Average pirate arrival time: 5
+Average ninja arrival time: 7
+
+In the example shown

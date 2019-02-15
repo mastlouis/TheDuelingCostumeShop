@@ -243,8 +243,9 @@ void costumeDept(AdventurerData *person){
     }
 
     //Mark the team used as available
-    if(person->visits[person->numVisits]->teamUsed >= 0)
+    if(person->visits[person->numVisits]->teamUsed >= 0){
       costumeShop->teamsAvailable[person->visits[person->numVisits]->teamUsed] = 0;
+    }
 
     sem_post(costumeShop->doorLock);
 
@@ -285,7 +286,7 @@ double getRandNormNum(double avg){
 int main(int argc, char* argv[]){
   AdventurerData** theAdventurers;
   srand(time(0));
-  srand48(1);
+  srand48(time(0));
   int numTeams, numPirates, numNinjas;
   double avgCostPirate, avgCostNinja, avgArrPirate, avgArrNinja;
   ShopData *costumeShop;
@@ -449,6 +450,9 @@ int getNextTeam(int numTeams, int* teamsAvailable){
     if(teamsAvailable[nextTeam] == 0){
       teamsAvailable[nextTeam] = 1;
       teamToReturn = nextTeam;
+      nextTeam++;
+      nextTeam %= numTeams;
+      return teamToReturn;
     }
     nextTeam++;
     nextTeam %= numTeams;
@@ -561,7 +565,7 @@ char* getPirateName(int i){
     case(29): return "The Dutch Dutchman";
     case(30): return "The Danish Dutchman";
     case(31): return "A pirate in a ninja costume";
-    case(32): return "ARRRRRTFM"
+    case(32): return "ARRRRRTFM";
     case(38): return "Professor Shue";
     case(39): return "Professor Walls";
     case(40): return "Professor Wills";
