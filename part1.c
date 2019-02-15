@@ -99,9 +99,9 @@ void costumeDept(AdventurerData *person){
       secondsElapsed = currentTime.tv_sec - costumeShop->lastUpdate->tv_sec;
       uSecondsElapsed = currentTime.tv_usec - costumeShop->lastUpdate->tv_usec;
 
-      //Add the number of people waiting scaled by the time for which 
+      //Add the number of people waiting scaled by the time for which
       //they've been waiting to the running total
-      costumeShop->peopleTimesTime += (costumeShop->numPiratesWaiting + costumeShop->numNinjasWaiting) * 
+      costumeShop->peopleTimesTime += (costumeShop->numPiratesWaiting + costumeShop->numNinjasWaiting) *
           (secondsElapsed + (((double) uSecondsElapsed) / 1000000.0));
 
       //Prepare time statistics for the next thread
@@ -179,7 +179,7 @@ void costumeDept(AdventurerData *person){
 
       if(isEntering){
         person->visits[person->numVisits] = (VisitData*) malloc(sizeof(VisitData));
-        if((person->visits[person->numVisits]->teamUsed 
+        if((person->visits[person->numVisits]->teamUsed
               = getNextTeam(costumeShop->numTeams, costumeShop->teamsAvailable)) == -1)
           //In case something went wrong and no teams are available
           printf(" No teams available, somehow\n");
@@ -192,10 +192,10 @@ void costumeDept(AdventurerData *person){
         person->minutesWaiting++;
         sleep(1);
       }
-      
+
     }
 
-    //printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop); 
+    //printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop);
     if(person->isArr) printf("%-24s the pirate is entering the shop with team %d. Time waited: %d\n"
         , getPirateName(person->id), person->visits[person->numVisits]->teamUsed, person->minutesWaiting);
     else printf("%-25s the ninja is entering the shop with team %d. Time waited: %d\n"
@@ -432,11 +432,11 @@ int main(int argc, char* argv[]){
 * Takes as parameters the number of costuming teams
 * and an array of the availability of the costuming
 * teams, wherein 0 represents a free team and 1
-* represents a busy team. 
+* represents a busy team.
 * Also changes the availability of the returned team
 * from free to busy.
-* 
-* Returns the index of the next available team or 
+*
+* Returns the index of the next available team or
 * -1 if all teams are busy.
 */
 int getNextTeam(int numTeams, int* teamsAvailable){
@@ -484,7 +484,7 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
     //Total gold owed
   for(int i = 0; i < numPirates + numNinjas; i++){
     if(i < numPirates){
-      printf("%-24s the pirate went to the shop %d time%s\n", getPirateName(i), 
+      printf("%-24s the pirate went to the shop %d time%s\n", getPirateName(i),
         theAdventurers[i]->numVisits, (theAdventurers[i]->numVisits > 1)? ".": "s.");
     }
     else{
@@ -508,7 +508,7 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
   //Gold per visit
   //Total profits
 
-  
+
   printf("The shop spent %d gold on %d teams\n", theShop->numTeams * 5, theShop->numTeams);
   printf("Gross revenue: %d\n", grossRevenue);
   printf("Total visits: %d\n", totalVisits);
@@ -550,8 +550,21 @@ char* getPirateName(int i){
     case(18): return "Candybeard";
     case(19): return "Nabstr";
     case(20): return "Captain Feathersword";
+    case(21): return "Sailor of the C";
+    case(22): return "Sailor of the C++";
+    case(23): return "Sailor of the C#";
+    case(24): return "Blackbeard";
+    case(25): return "Blackbeard's Ghost";
+    case(26): return "Blackbeard's Ghost's Ghost";
+    case(27): return "Blackbeard's Ghost's Ghost's Ghost";
+    case(28): return "ARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR";
+    case(29): return "The Dutch Dutchman";
+    case(30): return "The Danish Dutchman";
+    case(31): return "A pirate in a ninja costume";
+    case(32): return "ARRRRRTFM"
     case(38): return "Professor Shue";
     case(39): return "Professor Walls";
+    case(40): return "Professor Wills";
     default: return "Pirate McPirateson";
   }
 }
@@ -575,8 +588,28 @@ char* getNinjaName(int i){
     case(14): return "Sasuke";
     case(15): return "That girl from Kingsman";
     case(16): return "That DC superhero Katana";
+    case(17): return "Chuck Norris";
+    case(18): return "Gilbert";
+    case(19): return "The Slender Viper";
+    case(20): return "The Quick Spider";
+    case(21): return "The Winged Mamba";
+    case(22): return "Bloodeyes";
+    case(23): return "Silent Steve";
+    case(24): return "Lethal Moon";
+    case(25): return "Talkative Steve";
+    case(26): return "Jake from State Farm";
+    case(27): return "A ninja in a pirate costume";
+    case(28): return "Fay";
+    case(29): return "Matt";
+    case(30): return "The other Matt";
+    case(31): return "The other other Matt";
+    case(39): return "Brian";
+    case(40): return "Joan";
+    case(41): return "Jeff";
+    case(42): return "Jayesh";
+    case(43): return "Joshua";
+    case(48): return "Jordan B. Peterson";
     case(49): return "Smoke Weed";
-    //Make the TA's ninjas
     default: return "Ninja Ninjington";
   }
 }
