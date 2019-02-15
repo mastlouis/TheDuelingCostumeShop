@@ -196,9 +196,9 @@ void costumeDept(AdventurerData *person){
     }
 
     //printf("Pirates: %d Ninjas: %d\n", costumeShop->piratesInShop, costumeShop->ninjasInShop); 
-    if(person->isArr) printf("%s the pirate is entering the shop with team %d. Time waited: %d\n"
+    if(person->isArr) printf("%-24s the pirate is entering the shop with team %d. Time waited: %d\n"
         , getPirateName(person->id), person->visits[person->numVisits]->teamUsed, person->minutesWaiting);
-    else printf("%s the ninja is entering the shop with team %d. Time waited: %d\n"
+    else printf("%-25s the ninja is entering the shop with team %d. Time waited: %d\n"
         , getNinjaName(person->id - costumeShop->numPirates), person->visits[person->numVisits]->teamUsed, person->minutesWaiting);
 
     //if there is an available team, go into the costume shop
