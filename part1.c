@@ -485,11 +485,11 @@ void printStatistics(AdventurerData **theAdventurers, int numPirates, int numNin
     //Total gold owed
   for(int i = 0; i < numPirates + numNinjas; i++){
     if(i < numPirates){
-      printf("%19s the pirate went to the shop %d time%s\n", getPirateName(i), 
+      printf("%-24s the pirate went to the shop %d time%s\n", getPirateName(i), 
         theAdventurers[i]->numVisits, (theAdventurers[i]->numVisits > 1)? ".": "s.");
     }
     else{
-      printf("%20s the ninja went to the shop %d times.\n", getNinjaName(i - numPirates), theAdventurers[i]->numVisits);
+      printf("%-25s the ninja went to the shop %d times.\n", getNinjaName(i - numPirates), theAdventurers[i]->numVisits);
     }
     totalVisits += theAdventurers[i]->numVisits;
     for(int j = 0; j < theAdventurers[i]->numVisits; j++){
@@ -550,6 +550,7 @@ char* getPirateName(int i){
     case(17): return "Peggy";
     case(18): return "Candybeard";
     case(19): return "Nabstr";
+    case(20): return "Captain Feathersword";
     case(38): return "Professor Shue";
     case(39): return "Professor Walls";
     default: return "Pirate McPirateson";
